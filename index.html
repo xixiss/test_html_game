@@ -1,651 +1,480 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>余数射手</title>
+    <title>小学课堂拼图互动</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f0f8ff;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', '微软雅黑', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6ecbf5, #c2e9fb);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            user-select: none;
-            overflow: hidden;
         }
         
-        #gameTitle {
-            font-size: 36px;
-            color: #ff6b6b;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1300px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
         }
         
-        #gameRules {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 30px;
-            background-color: #e6f7ff;
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+        /* 左侧拼图区域 */
+        .left-panel {
+    width: 870px;
+    height: 780px;
+    border: 8px solid #ff8a00;
+    border-radius: 20px;
+    background-image: url('assets/bg.jpg'); /* 添加背景图 */
+    background-size: cover; /* 背景图覆盖整个面板 */
+    background-position: center; /* 背景图居中 */
+    position: relative;
+    /*overflow: hidden;*/
+}
+        
+        .panel-header {
+            text-align: center;
+            /*padding: 15px 0;*/
+            background: linear-gradient(to right, #2196f3, #21cbf3);
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            border-radius: 12px 12px 0 0;
+            /*margin-bottom: 15px;*/
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        #gameContainer {
+        #puzzle-area {
+    width: 100%;
+    height: calc(100% - 60px);
+    position: relative;
+    background-color: transparent; /* 改为透明 */
+    /* 移除 overflow: hidden */
+}
+        
+        /* 右侧控制面板 */
+        .right-panel {
+            width: 400px;
+            height: 800px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 70vh;
-            position: relative;
+            background: linear-gradient(to bottom, #f5f5f5, #e0e0e0);
+            border: 8px solid #4caf50;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
         }
         
-        .area-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        
-        .area-label {
-            font-size: 20px;
-            font-weight: bold;
-            margin-right: 20px;
-            width: 100px;
-            text-align: right;
-        }
-        
-        #monsterArea {
-            height: 100px;
-            width: 400px;
+        /* 开始按钮样式 */
+        .start-container {
             display: flex;
             justify-content: center;
-            align-items: center;
-            position: relative;
+            align-items: relative;
+            height: 100%;
         }
         
-        #monster {
-            font-size: 48px;
-            font-weight: bold;
-            color: #ff0000;
-            background-color: #fff;
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-            transition: all 0.3s;
-        }
-        
-        #ballsArea {
-            height: 200px;
-            width: 500px;
-            position: relative;
-            margin-bottom: 20px;
-            background-color: #f5f5f5;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .ball {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #4caf50;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            cursor: grab;
-            position: absolute;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-            z-index: 5;
-        }
-        
-        .ball:active {
-            cursor: grabbing;
-        }
-        
-        #cannonArea {
-            height: 100px;
-            width: 400px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        
-        #cannon {
-            font-size: 36px;
-            font-weight: bold;
-            color: white;
-            background-color: #2196f3;
-            border-radius: 10px;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 10;
-        }
-        
-        #scoreArea {
-            font-size: 24px;
-            margin-top: 20px;
-            color: #333;
-        }
-        
-        #timerArea {
-            font-size: 24px;
-            margin-top: 10px;
-            color: #333;
-        }
-        
-        #gameOver {
-            font-size: 36px;
-            color: #ff0000;
-            margin-top: 20px;
-            display: none;
-        }
-        
-        #finalScore {
-            font-size: 28px;
-            margin-top: 10px;
-            display: none;
-            color: #ff6b6b; /* 添加颜色样式 */
-            font-weight: bold; /* 添加加粗样式 */
-        }
-        
-        #restartButton {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #4caf50;
+        #start-btn {
+            padding: 20px 60px;
+            font-size: 32px;
+            background: linear-gradient(to bottom, #ff9800, #f57c00);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 50px;
             cursor: pointer;
-            display: none;
-        }
-        
-        #restartButton:hover {
-            background-color: #45a049;
-        }
-        
-        .projectile {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #4caf50;
-            position: absolute;
-            z-index: 8;
-        }
-        
-        .explosion {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            background-image: radial-gradient(circle, #ffcc00, #ff6600, transparent 70%);
-            border-radius: 50%;
-            opacity: 0;
-            z-index: 9;
-            pointer-events: none;
-        }
-        
-        #missText {
-            position: absolute;
-            font-size: 24px;
-            color: #ff0000;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
             font-weight: bold;
-            z-index: 11;
-            opacity: 0;
-            transition: all 0.5s;
-            pointer-events: none;
+            letter-spacing: 2px;
         }
         
-        #penaltyText {
-            position: absolute;
+        #start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(to bottom, #ffa726, #fb8c00);
+        }
+        
+        #start-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        
+        /* 图片容器 */
+        .image-container {
+            height: 600px;
+            position: relative;
+            overflow: hidden;
+            border: 4px dashed #9e9e9e;
+            border-radius: 15px;
+            background: white;
+            margin-top: 20px;
+        }
+        
+        /* 图片样式 */
+        .puzzle-image {
+    position: absolute;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 300px;
+    max-height: 300px;
+    cursor: grab;
+    /* 移除transition和transform效果 */
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+        .puzzle-image:hover {
+            /*transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);*/
+        }
+        
+        .puzzle-image.dragging {
+            cursor: grabbing;
+            opacity: 0.8;
+            z-index: 100;
+        }
+        
+        /* 动画效果 */
+        @keyframes fallDown {
+            0% {
+                top: -200px;
+                opacity: 0;
+            }
+            100% {
+                top: 50%;
+                transform: translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+        
+        .fall-down {
+            animation: fallDown 1.5s ease forwards;
+        }
+        
+        /* 计数器样式 */
+        .counter {
+            text-align: center;
             font-size: 24px;
-            color: #ff0000;
             font-weight: bold;
-            z-index: 11;
+            color: #e91e63;
+            margin-top: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* 说明区域 */
+        .instructions {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .instructions h3 {
+            color: #3f51b5;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            color: #455a64;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        /* 放置的图片样式 */
+        .dropped-image {
+    position: absolute;
+    cursor: move;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    /* 移除transition效果 */
+}
+        
+        .dropped-image:hover {
+           /* transform: scale(1.05);
+            z-index: 10;*/
+        }
+        
+        /* 完成消息 */
+        .completion-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: #e91e63;
+            text-shadow: 3px 3px 0 #ffeb3b;
+            text-align: center;
             opacity: 0;
-            transition: all 0.5s;
             pointer-events: none;
+            animation: celebrate 2s ease forwards;
+        }
+        
+        @keyframes celebrate {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
         }
     </style>
 </head>
 <body>
-    <h1 id="gameTitle">余数射手</h1>
-    <div id="gameRules">
-        游戏规则：
-        1.拖动绿色彩球到炮台，若绿色彩球上的数字÷炮台上的数字，余数刚好是红色彩球上的数字，则击中得1分。
-        2.连续两次未击中数字怪兽，得分减1分。
-        3.限时3分钟，得分多的胜。
-    </div>
-    
-    <div id="gameContainer">
-        <div class="area-container">
-            <div class="area-label" style="color: #ff0000;">数字怪兽</div>
-            <div id="missText">未击中!</div>
-            <div id="penaltyText">扣分!</div>
-            <div id="monsterArea">
-                <div id="monster">?</div>
-            </div>
+    <div class="container">
+        <div class="left-panel">
+            <!--<div class="panel-header">拼图区域</div> -->
+            <div id="puzzle-area"></div>
         </div>
         
-        <div id="ballsArea">
-            <!-- 彩球将通过JavaScript动态生成 -->
-        </div>
-        
-        <div class="area-container">
-            <div class="area-label" style="color: #2196f3;">蓝色炮台</div>
-            <div id="cannonArea">
-                <div id="cannon">?</div>
+        <div class="right-panel">
+            <div class="panel-header">控制面板</div>
+            
+            <div class="start-container" id="start-container">
+                <button id="start-btn">开始拼图</button>
+            </div>
+            
+            <div class="image-container" id="image-container" style="display: none;">
+                <!-- 图片将在这里动态生成 -->
+            </div>
+            
+            <div class="counter" id="counter" style="display: none;">
+                剩余图片: <span id="image-count">21</span>
+            </div>
+            
+            <div class="instructions">
+                <h3>使用说明</h3>
+                <ul>
+                    <li>点击"开始拼图"按钮开始游戏</li>
+                    <li>图片将从上方下落</li>
+                    <li>拖动图片到左侧拼图区域</li>
+                    <li>放置后自动加载下一张图片</li>
+                    <li>按任意顺序完成拼图</li>
+                </ul>
             </div>
         </div>
     </div>
-    
-    <div id="scoreArea">得分: <span id="score">0</span></div>
-    <div id="timerArea">时间: <span id="timer">180</span>秒</div>
-    <div id="gameOver">游戏结束!</div>
-    <div id="finalScore">最终得分: <span id="finalScoreValue">0</span></div>
-    <button id="restartButton">重新开始</button>
-    
-    <audio id="shootSound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
-    <audio id="hitSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
-    <audio id="missSound" src="https://www.soundjay.com/buttons/sounds/button-11.mp3" preload="auto"></audio>
-    <audio id="explosionSound" src="https://www.soundjay.com/mechanical/sounds/explosion-01.mp3" preload="auto"></audio>
-    <audio id="penaltySound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
-    
+
     <script>
-        // 游戏变量
-        let score = 0;
-        let timeLeft = 180; // 3分钟 = 180秒
-        let gameActive = true;
-        let monsterNumber = 0;
-        let cannonNumber = 0;
-        let balls = [];
-        let timerInterval;
-        let consecutiveMisses = 0; // 新增：连续未击中次数
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取DOM元素
+    const startBtn = document.getElementById('start-btn');
+    const startContainer = document.getElementById('start-container');
+    const imageContainer = document.getElementById('image-container');
+    const counter = document.getElementById('counter');
+    const imageCount = document.getElementById('image-count');
+    const puzzleArea = document.getElementById('puzzle-area');
+    const leftPanel = document.querySelector('.left-panel');
+    
+    // 初始化变量
+    let currentImage = 21; // 从21开始倒序加载
+    let isDragging = false;
+    let currentDraggedElement = null;
+    
+    // 点击开始按钮
+    startBtn.addEventListener('click', function() {
+        startContainer.style.display = 'none';
+        imageContainer.style.display = 'block';
+        counter.style.display = 'block';
         
-        // DOM元素
-        const scoreElement = document.getElementById('score');
-        const timerElement = document.getElementById('timer');
-        const monsterElement = document.getElementById('monster');
-        const cannonElement = document.getElementById('cannon');
-        const ballsArea = document.getElementById('ballsArea');
-        const gameOverElement = document.getElementById('gameOver');
-        const finalScoreElement = document.getElementById('finalScore');
-        const finalScoreValueElement = document.getElementById('finalScoreValue');
-        const restartButton = document.getElementById('restartButton');
-        const shootSound = document.getElementById('shootSound');
-        const hitSound = document.getElementById('hitSound');
-        const missSound = document.getElementById('missSound');
-        const explosionSound = document.getElementById('explosionSound');
-        const penaltySound = document.getElementById('penaltySound'); // 新增：扣分音效
-        const gameContainer = document.getElementById('gameContainer');
-        const missText = document.getElementById('missText');
-        const penaltyText = document.getElementById('penaltyText'); // 新增：扣分提示
-        
-        // 初始化游戏
-        function initGame() {
-            score = 0;
-            timeLeft = 180;
-            gameActive = true;
-            consecutiveMisses = 0; // 重置连续未击中次数
-            scoreElement.textContent = score;
-            timerElement.textContent = timeLeft;
-            gameOverElement.style.display = 'none';
-            finalScoreElement.style.display = 'none';
-            restartButton.style.display = 'none';
-            missText.style.opacity = '0';
-            penaltyText.style.opacity = '0';
-            
-            // 清空彩球区域
-            ballsArea.innerHTML = '';
-            balls = [];
-            
-            // 生成炮台数字 (1-9)
-            cannonNumber = Math.floor(Math.random() * 9) + 1; // 1-9
-            cannonElement.textContent = cannonNumber;
-            
-            // 生成数字怪兽 (1 < x < 炮台数字)
-            generateMonster();
-            
-            // 生成5个彩球
-            generateBalls();
-            
-            // 启动计时器
-            startTimer();
+        // 加载第一张图片
+        loadNextImage();
+    });
+    
+    // 加载图片函数
+    function loadNextImage() {
+        if (currentImage < 1) {
+            const completionMessage = document.createElement('div');
+            completionMessage.classList.add('completion-message');
+            completionMessage.textContent = '恭喜完成拼图!';
+            imageContainer.appendChild(completionMessage);
+            return;
         }
+
+        imageCount.textContent = currentImage;
+
+        const img = document.createElement('img');
+        img.src = `assets/${currentImage}.png`;
+        img.alt = `拼图图片 ${currentImage}`;
+        img.classList.add('puzzle-image');
+        img.dataset.id = currentImage;
+        img.draggable = true;
+
+        // 添加拖拽事件监听器
+        img.addEventListener('dragstart', dragStart);
+        img.addEventListener('dragend', dragEnd);
+
+        // 添加到容器
+        imageContainer.appendChild(img);
+
+        // 添加下落动画
+        setTimeout(() => {
+            img.classList.add('fall-down');
+        }, 100);
+    }
+    
+    // 拖拽开始
+    function dragStart(e) {
+        e.dataTransfer.setData('text/plain', this.dataset.id);
+        e.dataTransfer.effectAllowed = 'move';
+        this.classList.add('dragging');
+        currentDraggedElement = this;
+    }
+    
+    function dragEnd() {
+        this.classList.remove('dragging');
+        currentDraggedElement = null;
+    }
+    
+    // 左侧面板拖拽事件
+    leftPanel.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        this.style.borderColor = '#ff5722';
+        this.style.boxShadow = '0 0 20px rgba(255, 87, 34, 0.7)';
+    });
+    
+    leftPanel.addEventListener('dragleave', function() {
+        this.style.borderColor = '#ff8a00';
+        this.style.boxShadow = 'none';
+    });
+    
+    leftPanel.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#ff8a00';
+    this.style.boxShadow = 'none';
+    
+    const id = e.dataTransfer.getData('text/plain');
+    
+    if (id) {
+        // 创建放置的图片
+        const droppedImg = document.createElement('img');
+        droppedImg.src = `assets/${id}.png`;
+        droppedImg.alt = `放置的拼图 ${id}`;
+        droppedImg.classList.add('dropped-image');
+        droppedImg.draggable = true;
         
-        // 生成数字怪兽 (确保小于炮台数字)
-        function generateMonster() {
-            if (cannonNumber <= 2) {
-                // 如果炮台数字是1或2，怪兽只能是1（但根据规则应该大于1）
-                // 所以这里调整为炮台至少为2，怪兽为1
-                // 但根据游戏规则，怪兽数字应该大于1
-                // 所以我们需要确保炮台数字至少比怪兽大1
-                cannonNumber = Math.max(2, cannonNumber);
-                cannonElement.textContent = cannonNumber;
-                monsterNumber = 1;
-            } else {
-                monsterNumber = Math.floor(Math.random() * (cannonNumber - 1)) + 1; // 1到cannonNumber-1
-            }
+        // 设置位置 - 确保鼠标位置在图片中心
+        const rect = this.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // 等待图片加载完成后再设置位置
+        droppedImg.onload = function() {
+            // 计算图片中心点位置
+            const imgWidth = this.width;
+            const imgHeight = this.height;
             
-            // 确保怪兽数字大于1
-            if (monsterNumber < 2) {
-                monsterNumber = 2;
-                // 如果炮台数字不大于怪兽数字，增加炮台数字
-                if (cannonNumber <= monsterNumber) {
-                    cannonNumber = monsterNumber + 1;
-                    cannonElement.textContent = cannonNumber;
-                }
-            }
+            this.style.left = (mouseX - imgWidth/2) + 'px';
+            this.style.top = (mouseY - imgHeight/2) + 'px';
+        };
+        
+        // 添加拖拽功能
+        makeDraggable(droppedImg);
+        
+        puzzleArea.appendChild(droppedImg);
+        
+        // 移除右侧的图片
+        const imageToRemove = document.querySelector(`.puzzle-image[data-id="${id}"]`);
+        if (imageToRemove) {
+            imageToRemove.remove();
             
-            monsterElement.textContent = monsterNumber;
-            monsterElement.style.transform = 'scale(1)';
-            monsterElement.style.opacity = '1';
+            // 播放放置音效（模拟）
+            playPlaceSound();
+            
+            // 加载下一张图片
+            currentImage--;
+            setTimeout(loadNextImage, 500);
         }
+    }
+});
+    
+    // 使元素可拖动
+    function makeDraggable(element) {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
         
-        // 生成彩球
-        function generateBalls() {
-            // 先清空现有球
-            ballsArea.innerHTML = '';
-            balls = [];
-            
-            // 生成5个球的位置
-            const positions = [];
-            const maxX = ballsArea.clientWidth - 50;
-            const maxY = ballsArea.clientHeight - 50;
-            
-            for (let i = 0; i < 5; i++) {
-                let x, y, overlapping;
-                let attempts = 0;
-                
-                // 尝试找到一个不重叠的位置
-                do {
-                    overlapping = false;
-                    x = Math.floor(Math.random() * maxX);
-                    y = Math.floor(Math.random() * maxY);
-                    
-                    // 检查是否与其他球重叠
-                    for (const pos of positions) {
-                        const dx = pos.x - x;
-                        const dy = pos.y - y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        
-                        if (distance < 60) { // 60是球直径+安全距离
-                            overlapping = true;
-                            break;
-                        }
-                    }
-                    
-                    attempts++;
-                    if (attempts > 100) break; // 防止无限循环
-                } while (overlapping);
-                
-                positions.push({ x, y });
-                
-                // 创建球元素
-                const ball = document.createElement('div');
-                ball.className = 'ball';
-                ball.id = 'ball' + i;
-                ball.style.left = x + 'px';
-                ball.style.top = y + 'px';
-                
-                // 生成球上的数字
-                let ballNumber;
-                if (i < 4) {
-                    ballNumber = Math.floor(Math.random() * 98) + 2; // 2-99
-                } else {
-                    const multiple = Math.floor(Math.random() * 10) + 1; // 1-10
-                    ballNumber = cannonNumber * multiple + monsterNumber;
-                }
-                
-                ball.textContent = ballNumber;
-                balls.push({ element: ball, number: ballNumber, originalNumber: ballNumber });
-                
-                // 添加拖拽事件
-                ball.draggable = true;
-                ball.addEventListener('dragstart', dragStart);
-                
-                ballsArea.appendChild(ball);
-            }
-        }
+        element.onmousedown = dragMouseDown;
         
-        // 拖拽开始
-        function dragStart(e) {
-            if (!gameActive) {
-                e.preventDefault();
-                return;
-            }
-            
-            e.dataTransfer.setData('text/plain', e.target.id);
-        }
-        
-        // 炮台设置为拖放目标
-        cannonElement.addEventListener('dragover', function(e) {
+        function dragMouseDown(e) {
+            e = e || window.event;
             e.preventDefault();
-        });
-        
-        cannonElement.addEventListener('drop', function(e) {
-            if (!gameActive) return;
             
+            // 获取鼠标位置
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+            
+            // 添加拖动样式
+            element.style.cursor = 'grabbing';
+            element.style.zIndex = '100';
+            element.style.boxShadow = '0 0 20px rgba(0,0,0,0.4)';
+        }
+        
+        function elementDrag(e) {
+            e = e || window.event;
             e.preventDefault();
-            const ballId = e.dataTransfer.getData('text/plain');
-            const ballElement = document.getElementById(ballId);
             
-            if (ballElement) {
-                // 播放射击音效
-                shootSound.currentTime = 0;
-                shootSound.play();
-                
-                // 找到对应的球数据
-                const ballData = balls.find(b => b.element.id === ballId);
-                if (ballData) {
-                    const ballNumber = ballData.number;
-                    const remainder = ballNumber % cannonNumber;
-                    
-                    // 创建发射的弹丸
-                    const projectile = document.createElement('div');
-                    projectile.className = 'projectile';
-                    
-                    // 获取炮台和球的位置
-                    const cannonRect = cannonElement.getBoundingClientRect();
-                    const ballRect = ballElement.getBoundingClientRect();
-                    const containerRect = gameContainer.getBoundingClientRect();
-                    
-                    // 设置弹丸初始位置
-                    const startX = cannonRect.left - containerRect.left + cannonRect.width / 2 - 10;
-                    const startY = cannonRect.top - containerRect.top + cannonRect.height / 2 - 10;
-                    
-                    projectile.style.left = startX + 'px';
-                    projectile.style.top = startY + 'px';
-                    
-                    gameContainer.appendChild(projectile);
-                    
-                    // 获取怪兽位置
-                    const monsterRect = monsterElement.getBoundingClientRect();
-                    const targetX = monsterRect.left - containerRect.left + monsterRect.width / 2 - 10;
-                    const targetY = monsterRect.top - containerRect.top + monsterRect.height / 2 - 10;
-                    
-                    // 动画：弹丸飞向怪兽
-                    const duration = 500; // 动画持续时间(毫秒)
-                    const startTime = performance.now();
-                    
-                    function animateProjectile(currentTime) {
-                        const elapsed = currentTime - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        
-                        // 计算当前位置
-                        const currentX = startX + (targetX - startX) * progress;
-                        const currentY = startY + (targetY - startY) * progress;
-                        
-                        projectile.style.left = currentX + 'px';
-                        projectile.style.top = currentY + 'px';
-                        
-                        if (progress < 1) {
-                            requestAnimationFrame(animateProjectile);
-                        } else {
-                            // 动画结束
-                            gameContainer.removeChild(projectile);
-                            
-                            // 检查是否击中
-                            if (remainder === monsterNumber) {
-                                // 击中
-                                hitSound.currentTime = 0;
-                                hitSound.play();
-                                
-                                // 创建爆炸效果
-                                const explosion = document.createElement('div');
-                                explosion.className = 'explosion';
-                                explosion.style.left = (targetX - 40) + 'px';
-                                explosion.style.top = (targetY - 40) + 'px';
-                                gameContainer.appendChild(explosion);
-                                
-                                // 播放爆炸音效
-                                explosionSound.currentTime = 0;
-                                explosionSound.play();
-                                
-                                // 爆炸动画
-                                let opacity = 1;
-                                let scale = 0.5;
-                                const explosionInterval = setInterval(() => {
-                                    opacity -= 0.05;
-                                    scale += 0.05;
-                                    explosion.style.opacity = opacity;
-                                    explosion.style.transform = `scale(${scale})`;
-                                    
-                                    if (opacity <= 0) {
-                                        clearInterval(explosionInterval);
-                                        gameContainer.removeChild(explosion);
-                                    }
-                                }, 30);
-                                
-                                score++;
-                                scoreElement.textContent = score;
-                                consecutiveMisses = 0; // 重置连续未击中次数
-                                
-                                // 怪兽消失效果
-                                monsterElement.style.transform = 'scale(1.5)';
-                                monsterElement.style.opacity = '0';
-                                
-                                setTimeout(() => {
-                                    // 生成新的炮台数字
-                                    cannonNumber = Math.floor(Math.random() * 9) + 1; // 1-9
-                                    cannonElement.textContent = cannonNumber;
-                                    
-                                    // 生成新的怪兽和球
-                                    generateMonster();
-                                    generateBalls();
-                                }, 500);
-                            } else {
-                                // 未击中
-                                missSound.currentTime = 0;
-                                missSound.play();
-                                
-                                // 显示"未击中"文字
-                                missText.style.left = (targetX - 50) + 'px';
-                                missText.style.top = (targetY - 20) + 'px';
-                                missText.style.opacity = '1';
-                                
-                                setTimeout(() => {
-                                    missText.style.opacity = '0';
-                                }, 1000);
-                                
-                                // 增加连续未击中次数
-                                consecutiveMisses++;
-                                
-                                // 检查是否连续两次未击中
-                                if (consecutiveMisses >= 2) {
-                                    // 扣分
-                                    if (score > 0) {
-                                        score--;
-                                        scoreElement.textContent = score;
-                                        
-                                        // 播放扣分音效
-                                        penaltySound.currentTime = 0;
-                                        penaltySound.play();
-                                        
-                                        // 显示"扣分"文字
-                                        penaltyText.style.left = (targetX - 30) + 'px';
-                                        penaltyText.style.top = (targetY - 50) + 'px';
-                                        penaltyText.style.opacity = '1';
-                                        
-                                        setTimeout(() => {
-                                            penaltyText.style.opacity = '0';
-                                        }, 1000);
-                                    }
-                                    
-                                    consecutiveMisses = 0; // 重置连续未击中次数
-                                }
-                                
-                                // 将球移回原位
-                                const ballData = balls.find(b => b.element.id === ballId);
-                                if (ballData) {
-                                    ballData.element.style.left = ballData.element.dataset.originalX + 'px';
-                                    ballData.element.style.top = ballData.element.dataset.originalY + 'px';
-                                }
-                            }
-                        }
-                    }
-                    
-                    // 保存球的原始位置
-                    ballElement.dataset.originalX = ballElement.style.left;
-                    ballElement.dataset.originalY = ballElement.style.top;
-                    
-                    requestAnimationFrame(animateProjectile);
-                }
-            }
-        });
-        
-        // 计时器
-        function startTimer() {
-            clearInterval(timerInterval); // 清除之前的计时器
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerElement.textContent = timeLeft;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    endGame();
-                }
-            }, 1000);
+            // 计算新位置
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            
+            // 设置元素新位置
+            element.style.top = (element.offsetTop - pos2) + "px";
+            element.style.left = (element.offsetLeft - pos1) + "px";
         }
         
-        // 游戏结束
-        function endGame() {
-            gameActive = false;
-            gameOverElement.style.display = 'block';
-            finalScoreValueElement.textContent = score;
-            finalScoreElement.style.display = 'block';
-            restartButton.style.display = 'inline-block';
+        function closeDragElement() {
+            // 停止移动
+            document.onmouseup = null;
+            document.onmousemove = null;
+            
+            // 恢复样式
+            element.style.cursor = 'grab';
+            element.style.zIndex = '1';
+            element.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
         }
-        
-        // 重新开始按钮
-        restartButton.addEventListener('click', initGame);
-        
-        // 初始化游戏
-        initGame();
-        
-        // 窗口大小改变时重新生成球的位置
-        window.addEventListener('resize', function() {
-            if (gameActive) {
-                generateBalls();
-            }
-        });
+    }
+    
+    // 模拟放置音效
+    function playPlaceSound() {
+        // 在实际应用中，这里会播放音频文件
+        console.log("播放放置音效");
+    }
+});
     </script>
 </body>
 </html>
